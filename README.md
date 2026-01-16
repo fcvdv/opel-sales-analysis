@@ -55,15 +55,17 @@ Opel Türkiye'nin satış verilerini analiz etmek için geliştirilmiş web uygu
 
 3. **Environment değişkenlerini yapılandırın**
    
-   `.env` dosyası oluşturun:
+   `.env` dosyası oluşturun (`.env.example` dosyasını referans alabilirsiniz):
    ```env
    DB_HOST=localhost
-   DB_USER=root
-   DB_PASSWORD=root
+   DB_USER=your_db_user
+   DB_PASSWORD=your_db_password
    DB_NAME=opel_sales
    PORT=3000
    NODE_ENV=development
    ```
+   
+   **Not:** `.env` dosyasını asla versiyon kontrolüne eklemeyin. Hassas bilgiler içerir.
 
 4. **Veritabanını hazırlayın**
    
