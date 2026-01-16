@@ -1,0 +1,110 @@
+<%- include('../partials/header', { activePage: 'by-dealer', title: 'Bayiler' }) %>
+
+<div class="container">
+<h2 style="color: #1e3c72; margin-bottom: 20px; font-size: 1.5em; font-weight: 600;">Bayilere Göre Satış Dağılımı</h2>
+
+<div class="filters-section" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0e0e0;">
+  <form method="GET" action="/sales/by-dealer" id="filterForm">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Bayi</label>
+        <input type="text" name="dealer_name" value="<%= filters.dealer_name || '' %>" placeholder="Bayi ara..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Şehir</label>
+        <input type="text" name="city_name" value="<%= filters.city_name || '' %>" placeholder="Şehir ara..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Bölge</label>
+        <select name="region_id" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+          <option value="">Tümü</option>
+          <% filterOptions.regions.forEach(region => { %>
+          <option value="<%= region.region_id %>" <%= filters.region_id == region.region_id ? 'selected' : '' %>><%= region.region_name %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Min Satış</label>
+        <input type="number" name="min_sales" value="<%= filters.min_sales || '' %>" placeholder="Min satış" min="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Max Satış</label>
+        <input type="number" name="max_sales" value="<%= filters.max_sales || '' %>" placeholder="Max satış" min="0" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button type="submit" style="padding: 10px 20px; background: #1e3c72; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 0.9em;">Filtrele</button>
+      <a href="/sales/by-dealer" style="padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: 500; font-size: 0.9em;">Temizle</a>
+    </div>
+  </form>
+</div>
+
+<div style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
+  Toplam <strong><%= pagination.totalItems %></strong> kayıt bulundu. 
+  Sayfa <strong><%= pagination.currentPage %></strong> / <strong><%= pagination.totalPages %></strong>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Bayi</th>
+            <th>Şehir</th>
+            <th>Bölge</th>
+            <th>Toplam Satış</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (byDealer.length === 0) { %>
+        <tr>
+            <td colspan="4" style="text-align: center; padding: 40px; color: #999;">Veri bulunamadı.</td>
+        </tr>
+        <% } else { %>
+        <% byDealer.forEach(dealer => { %>
+        <tr>
+            <td><strong><%= dealer.dealer_name %></strong></td>
+            <td><%= dealer.city_name %></td>
+            <td><%= dealer.region_name || '-' %></td>
+            <td><%= Number(dealer.total_sales).toLocaleString('tr-TR') %></td>
+        </tr>
+        <% }) %>
+        <% } %>
+    </tbody>
+</table>
+
+<% if (pagination.totalPages > 1) { %>
+<div class="pagination" style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+  <% 
+    function buildQueryString(filters, page) {
+      const params = [];
+      if (filters.dealer_name) params.push('dealer_name=' + encodeURIComponent(filters.dealer_name));
+      if (filters.city_name) params.push('city_name=' + encodeURIComponent(filters.city_name));
+      if (filters.region_id) params.push('region_id=' + encodeURIComponent(filters.region_id));
+      if (filters.min_sales) params.push('min_sales=' + encodeURIComponent(filters.min_sales));
+      if (filters.max_sales) params.push('max_sales=' + encodeURIComponent(filters.max_sales));
+      params.push('page=' + page);
+      return params.length > 0 ? '?' + params.join('&') : '?page=' + page;
+    }
+  %>
+  <% if (pagination.hasPrevPage) { %>
+    <a href="<%= buildQueryString(filters, pagination.currentPage - 1) %>" style="padding: 8px 15px; background: #1e3c72; color: white; text-decoration: none; border-radius: 4px; font-size: 0.9em;">Önceki</a>
+  <% } else { %>
+    <span style="padding: 8px 15px; background: #e0e0e0; color: #999; border-radius: 4px; font-size: 0.9em; cursor: not-allowed;">Önceki</span>
+  <% } %>
+  
+  <% for (let i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) { %>
+    <% if (i === pagination.currentPage) { %>
+      <span style="padding: 8px 15px; background: #667eea; color: white; border-radius: 4px; font-size: 0.9em; font-weight: bold;"><%= i %></span>
+    <% } else { %>
+      <a href="<%= buildQueryString(filters, i) %>" style="padding: 8px 15px; background: #f8f9fa; color: #333; text-decoration: none; border-radius: 4px; font-size: 0.9em; border: 1px solid #ddd;"><%= i %></a>
+    <% } %>
+  <% } %>
+  
+  <% if (pagination.hasNextPage) { %>
+    <a href="<%= buildQueryString(filters, pagination.currentPage + 1) %>" style="padding: 8px 15px; background: #1e3c72; color: white; text-decoration: none; border-radius: 4px; font-size: 0.9em;">Sonraki</a>
+  <% } else { %>
+    <span style="padding: 8px 15px; background: #e0e0e0; color: #999; border-radius: 4px; font-size: 0.9em; cursor: not-allowed;">Sonraki</span>
+  <% } %>
+</div>
+<% } %>
+</div>
+<%- include('../partials/footer') %>

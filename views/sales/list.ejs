@@ -1,0 +1,118 @@
+<%- include('../partials/header', { activePage: 'sales', title: 'Tüm Satışlar' }) %>
+
+<div class="container">
+<h2 style="color: #1e3c72; margin-bottom: 20px; font-size: 1.5em; font-weight: 600;">Tüm Satışlar</h2>
+
+<div class="filters-section" style="background: #f8f9fa; padding: 20px; border-radius: 8px; margin-bottom: 20px; border: 1px solid #e0e0e0;">
+  <form method="GET" action="/sales" id="filterForm">
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; margin-bottom: 15px;">
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Model</label>
+        <input type="text" name="model_name" value="<%= filters.model_name || '' %>" placeholder="Model ara..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Yakıt Tipi</label>
+        <select name="fuel_type" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+          <option value="">Tümü</option>
+          <% filterOptions.fuelTypes.forEach(fuelType => { %>
+          <option value="<%= fuelType %>" <%= filters.fuel_type === fuelType ? 'selected' : '' %>><%= fuelType %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Bayi</label>
+        <input type="text" name="dealer_name" value="<%= filters.dealer_name || '' %>" placeholder="Bayi ara..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Şehir</label>
+        <input type="text" name="city_name" value="<%= filters.city_name || '' %>" placeholder="Şehir ara..." style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Tarih (Başlangıç)</label>
+        <input type="date" name="date_from" value="<%= filters.date_from || '' %>" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+      </div>
+      <div>
+        <label style="display: block; margin-bottom: 5px; color: #333; font-weight: 500; font-size: 0.9em;">Tarih (Bitiş)</label>
+        <input type="date" name="date_to" value="<%= filters.date_to || '' %>" style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9em;">
+      </div>
+    </div>
+    <div style="display: flex; gap: 10px;">
+      <button type="submit" style="padding: 10px 20px; background: #1e3c72; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: 500; font-size: 0.9em;">Filtrele</button>
+      <a href="/sales" style="padding: 10px 20px; background: #6c757d; color: white; text-decoration: none; border-radius: 4px; display: inline-block; font-weight: 500; font-size: 0.9em;">Temizle</a>
+    </div>
+  </form>
+</div>
+
+<div style="margin-bottom: 15px; color: #666; font-size: 0.9em;">
+  Toplam <strong><%= pagination.totalItems %></strong> kayıt bulundu. 
+  Sayfa <strong><%= pagination.currentPage %></strong> / <strong><%= pagination.totalPages %></strong>
+</div>
+
+<table>
+    <thead>
+        <tr>
+            <th>Model</th>
+            <th>Yakıt Tipi</th>
+            <th>Bayi</th>
+            <th>Şehir</th>
+            <th>Tarih</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (sales.length === 0) { %>
+        <tr>
+            <td colspan="5" style="text-align: center; padding: 40px; color: #999;">Henüz satış verisi bulunmamaktadır.</td>
+        </tr>
+        <% } else { %>
+        <% sales.forEach(sale => { %>
+        <tr>
+            <td><strong><%= sale.model_name %></strong></td>
+            <td><%= sale.fuel_type %></td>
+            <td><%= sale.dealer_name %></td>
+            <td><%= sale.city_name %></td>
+            <td><%= new Date(sale.date).toLocaleDateString('tr-TR') %></td>
+        </tr>
+        <% }) %>
+        <% } %>
+    </tbody>
+</table>
+
+<% if (pagination.totalPages > 1) { %>
+<div class="pagination" style="margin-top: 20px; display: flex; justify-content: center; align-items: center; gap: 10px;">
+  <% 
+    function buildQueryString(filters, page) {
+      const params = [];
+      if (filters.model_name) params.push('model_name=' + encodeURIComponent(filters.model_name));
+      if (filters.fuel_type) params.push('fuel_type=' + encodeURIComponent(filters.fuel_type));
+      if (filters.dealer_name) params.push('dealer_name=' + encodeURIComponent(filters.dealer_name));
+      if (filters.city_name) params.push('city_name=' + encodeURIComponent(filters.city_name));
+      if (filters.date_from) params.push('date_from=' + encodeURIComponent(filters.date_from));
+      if (filters.date_to) params.push('date_to=' + encodeURIComponent(filters.date_to));
+      params.push('page=' + page);
+      return params.length > 0 ? '?' + params.join('&') : '?page=' + page;
+    }
+  %>
+  <% if (pagination.hasPrevPage) { %>
+    <a href="<%= buildQueryString(filters, pagination.currentPage - 1) %>" style="padding: 8px 15px; background: #1e3c72; color: white; text-decoration: none; border-radius: 4px; font-size: 0.9em;">Önceki</a>
+  <% } else { %>
+    <span style="padding: 8px 15px; background: #e0e0e0; color: #999; border-radius: 4px; font-size: 0.9em; cursor: not-allowed;">Önceki</span>
+  <% } %>
+  
+  <% for (let i = Math.max(1, pagination.currentPage - 2); i <= Math.min(pagination.totalPages, pagination.currentPage + 2); i++) { %>
+    <% if (i === pagination.currentPage) { %>
+      <span style="padding: 8px 15px; background: #667eea; color: white; border-radius: 4px; font-size: 0.9em; font-weight: bold;"><%= i %></span>
+    <% } else { %>
+      <a href="<%= buildQueryString(filters, i) %>" style="padding: 8px 15px; background: #f8f9fa; color: #333; text-decoration: none; border-radius: 4px; font-size: 0.9em; border: 1px solid #ddd;"><%= i %></a>
+    <% } %>
+  <% } %>
+  
+  <% if (pagination.hasNextPage) { %>
+    <a href="<%= buildQueryString(filters, pagination.currentPage + 1) %>" style="padding: 8px 15px; background: #1e3c72; color: white; text-decoration: none; border-radius: 4px; font-size: 0.9em;">Sonraki</a>
+  <% } else { %>
+    <span style="padding: 8px 15px; background: #e0e0e0; color: #999; border-radius: 4px; font-size: 0.9em; cursor: not-allowed;">Sonraki</span>
+  <% } %>
+</div>
+<% } %>
+</div>
+<%- include('../partials/footer') %>
+

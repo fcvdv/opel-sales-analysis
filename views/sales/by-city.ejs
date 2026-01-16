@@ -1,0 +1,32 @@
+<%- include('../partials/header', { activePage: 'by-city', title: 'Şehirler' }) %>
+
+<div class="container">
+<h2 style="color: #1e3c72; margin-bottom: 20px; font-size: 1.5em; font-weight: 600;">Şehirlere Göre Satış Dağılımı</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Şehir</th>
+            <th>Bölge</th>
+            <th>Toplam Satış</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (byCity.length === 0) { %>
+        <tr>
+            <td colspan="3" style="text-align: center; padding: 40px; color: #999;">Veri bulunamadı.</td>
+        </tr>
+        <% } else { %>
+        <% byCity.forEach(city => { %>
+        <tr>
+            <td><strong><%= city.city_name %></strong></td>
+            <td><%= city.region_name %></td>
+            <td><%= city.total_sales %></td>
+        </tr>
+        <% }) %>
+        <% } %>
+    </tbody>
+</table>
+</div>
+<%- include('../partials/footer') %>
+

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= typeof title !== 'undefined' ? title : 'Opel Türkiye Satış Analizi' %></title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192.756 192.756'%3E%3Crect width='192.756' height='192.756' fill='white'/%3E%3Cg fill-rule='evenodd' clip-rule='evenodd'%3E%3Cpath fill='%23fff' fill-opacity='0' d='M0 0h192.756v192.756H0V0z'/%3E%3Cpath d='M36.98 93.995v2.321c0 32.754 26.644 59.52 59.397 59.52 27.255 0 50.231-18.332 57.198-43.264l-95.33 1.1L81.223 95.95 36.98 93.995zm2.201-13.566c6.966-25.177 29.943-43.51 57.197-43.51 32.755 0 59.397 26.644 59.397 59.397v2.934l-44.242-1.955 23.588-17.966-95.94 1.1zm-9.9 13.199l-20.777-.855v-12.1l22.61-.244C38.325 51.097 64.846 29.22 96.378 29.22c37.032 0 67.097 30.065 67.097 67.096 0 1.102 0 2.078-.121 3.178l20.898.855v11.979l-22.609.244c-7.334 29.209-33.732 50.965-65.265 50.965-37.154 0-67.219-30.066-67.219-67.221 0-.855 0-1.71.122-2.688z'/%3E%3C/g%3E%3C/svg%3E" type="image/svg+xml">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: #f5f7fa;
+            min-height: 100vh;
+            display: flex;
+        }
+        .sidebar {
+            width: 280px;
+            background: linear-gradient(180deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            position: fixed;
+            height: 100vh;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+        }
+        .sidebar-header {
+            padding: 30px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+        }
+        .sidebar-header .logo {
+            max-width: 120px;
+            height: auto;
+            margin-bottom: 15px;
+            display: block;
+            margin-left: auto;
+            margin-right: auto;
+            filter: brightness(0) invert(1);
+        }
+        .sidebar-header h1 {
+            font-size: 1.8em;
+            margin-bottom: 8px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+        .sidebar-header .subtitle {
+            font-size: 0.85em;
+            opacity: 0.8;
+            font-weight: 300;
+        }
+        .sidebar-nav {
+            padding: 20px 0;
+            flex: 1;
+        }
+        .sidebar-nav ul {
+            list-style: none;
+        }
+        .sidebar-nav li {
+            margin: 5px 0;
+        }
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            color: rgba(255,255,255,0.9);
+            text-decoration: none;
+            transition: all 0.3s;
+            border-left: 3px solid transparent;
+            font-size: 0.95em;
+        }
+        .sidebar-nav a:hover {
+            background: rgba(255,255,255,0.1);
+            border-left-color: #fff;
+            padding-left: 25px;
+        }
+        .sidebar-nav a.active {
+            background: rgba(255,255,255,0.15);
+            border-left-color: #fff;
+            font-weight: 600;
+        }
+        .sidebar-footer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px;
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            font-size: 0.75em;
+            opacity: 0.7;
+            line-height: 1.5;
+        }
+        .main-content {
+            margin-left: 280px;
+            flex: 1;
+            min-height: 100vh;
+        }
+        .top-header {
+            background: white;
+            padding: 20px 40px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            border-bottom: 1px solid #e0e0e0;
+        }
+        .top-header h2 {
+            color: #1e3c72;
+            font-size: 1.8em;
+            font-weight: 600;
+            margin: 0;
+        }
+        .content-wrapper {
+            padding: 30px 40px;
+        }
+        .container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #333;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        tr:hover {
+            background: #f8f9fa;
+        }
+        .stat-card {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            text-align: center;
+            flex: 1;
+            min-width: 200px;
+            box-shadow: 0 4px 15px rgba(30, 60, 114, 0.3);
+            transition: transform 0.3s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-card h3 {
+            font-size: 2.5em;
+            margin-bottom: 8px;
+            font-weight: 700;
+        }
+        .stat-card p {
+            opacity: 0.9;
+            font-size: 0.95em;
+        }
+        .stats-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .btn {
+            display: inline-block;
+            padding: 12px 24px;
+            background: #667eea;
+            color: white;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 5px;
+            transition: all 0.3s;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #d32f2f;
+        }
+        @media (max-width: 768px) {
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+            }
+            .main-content {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <img src="/opel-logo.svg" alt="Opel Logo" class="logo">
+            <h1>Opel Türkiye</h1>
+            <p class="subtitle">Satış Analiz Sistemi</p>
+        </div>
+        <nav class="sidebar-nav">
+            <ul>
+                <li><a href="/dashboard" class="<%= typeof activePage !== 'undefined' && activePage === 'dashboard' ? 'active' : '' %>">📊 Dashboard</a></li>
+                <li><a href="/sales" class="<%= typeof activePage !== 'undefined' && activePage === 'sales' ? 'active' : '' %>">📋 Tüm Satışlar</a></li>
+                <li><a href="/sales/top-models" class="<%= typeof activePage !== 'undefined' && activePage === 'top-models' ? 'active' : '' %>">🏆 Modeller</a></li>
+                <li><a href="/sales/by-city" class="<%= typeof activePage !== 'undefined' && activePage === 'by-city' ? 'active' : '' %>">🏙️ Şehirler</a></li>
+                <li><a href="/sales/by-dealer" class="<%= typeof activePage !== 'undefined' && activePage === 'by-dealer' ? 'active' : '' %>">🏪 Bayiler</a></li>
+                <li><a href="/sales/by-fuel-type" class="<%= typeof activePage !== 'undefined' && activePage === 'by-fuel-type' ? 'active' : '' %>">⛽ Yakıt Tipleri</a></li>
+                <li><a href="/sales/by-body-type" class="<%= typeof activePage !== 'undefined' && activePage === 'by-body-type' ? 'active' : '' %>">🚙 Kasa Tipleri</a></li>
+            </ul>
+        </nav>
+        <div class="sidebar-footer">
+            © Dokuz Eylül Üniversitesi<br>
+            Yönetim Bilişim Sistemleri
+        </div>
+    </div>
+    <div class="main-content">
+        <div class="top-header">
+            <h2><%= typeof title !== 'undefined' ? title : 'Opel Türkiye Satış Analizi' %></h2>
+        </div>
+        <div class="content-wrapper">

@@ -1,0 +1,1863 @@
+<%- include('partials/header', { activePage: 'dashboard', title: 'Opel Satış Analizi' }) %>
+
+<div class="filters-section" style="background: white; padding: 20px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin-bottom: 30px;">
+  <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+    <h3 style="margin: 0; color: #333; font-size: 16px; font-weight: 600;">Filtreler</h3>
+    <button id="reset-filters-btn" style="padding: 8px 16px; background: #dc3545; color: white; border: none; border-radius: 6px; font-size: 13px; font-weight: 500; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#c82333'" onmouseout="this.style.background='#dc3545'">Tümünü Temizle</button>
+  </div>
+  <div class="filters-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+    <div class="filter-group">
+      <label for="filter-fuel-type" style="display: block; margin-bottom: 5px; color: #666; font-size: 13px; font-weight: 500;">Yakıt Tipi</label>
+      <select id="filter-fuel-type" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
+        <option value="">Tümü</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="filter-body-type" style="display: block; margin-bottom: 5px; color: #666; font-size: 13px; font-weight: 500;">Kasa Tipi</label>
+      <select id="filter-body-type" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
+        <option value="">Tümü</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="filter-region" style="display: block; margin-bottom: 5px; color: #666; font-size: 13px; font-weight: 500;">Bölge</label>
+      <select id="filter-region" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
+        <option value="">Tümü</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label for="filter-year" style="display: block; margin-bottom: 5px; color: #666; font-size: 13px; font-weight: 500;">Yıl</label>
+      <select id="filter-year" style="width: 100%; padding: 8px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; background: white; cursor: pointer;">
+        <option value="">Tümü</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div id="active-filters" class="active-filters" style="display: none;">
+  <h3 style="margin-bottom: 10px; color: #333; font-size: 14px; font-weight: 600;">Aktif Filtreler:</h3>
+  <div id="filter-chips" class="filter-chips"></div>
+</div>
+
+<div class="stats-grid">
+  <div class="stat-card">
+    <h3 id="total-sales">-</h3>
+    <p>Toplam Satış</p>
+  </div>
+  <div class="stat-card">
+    <h3 id="avg-monthly-sales">-</h3>
+    <p>Ortalama Aylık Satış</p>
+  </div>
+  <div class="stat-card">
+    <h3 id="top-model">-</h3>
+    <p>En Çok Satan Model</p>
+  </div>
+  <div class="stat-card">
+    <small id="top-dealer-city" style="color: white; font-size: 0.85em; display: block; margin-bottom: 5px;"></small>
+    <h3 id="top-dealer">-</h3>
+    <p>En Çok Satış Yapan Bayi</p>
+  </div>
+  <div class="stat-card">
+    <h3 id="top-city">-</h3>
+    <p>En Çok Satış Yapılan Şehir</p>
+  </div>
+</div>
+
+<div class="charts-grid">
+  <div class="chart-container">
+    <h3>Yakıt Tiplerine Göre Satışlar</h3>
+    <canvas id="chart-by-fuel-type"></canvas>
+  </div>
+  
+  <div class="chart-container">
+    <h3>Yıllık Satış Dinamiği</h3>
+    <canvas id="chart-by-month"></canvas>
+  </div>
+</div>
+
+<div class="charts-grid-row-2">
+  <div class="chart-container">
+    <h3>En Çok Satan 5 Model</h3>
+    <canvas id="chart-top-models"></canvas>
+  </div>
+  
+  <div class="chart-container">
+    <h3>Bölgelere Göre Satışlar</h3>
+    <div id="chart-by-region" style="width: 100%; min-height: 400px;"></div>
+  </div>
+  
+  <div class="chart-container">
+    <h3>Kasa ve Yakıt Tiplerine Göre Satışlar</h3>
+    <canvas id="chart-by-body-fuel-type"></canvas>
+  </div>
+</div>
+
+<div class="charts-grid-row-3">
+  <div class="chart-container" style="grid-column: span 2;">
+    <h3>Aylık Yakıt Tipi Trendi</h3>
+    <canvas id="chart-month-fuel-trend" style="max-height: 500px;"></canvas>
+  </div>
+  <div class="chart-container">
+    <h3>Çeyreklik Model Satışları</h3>
+    <canvas id="chart-by-quarter-model" style="max-height: 500px;"></canvas>
+  </div>
+</div>
+</div>
+
+<div class="strategic-decision-section" style="background: white; padding: 30px; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,0.08); margin: 30px 0; width: 100%; box-sizing: border-box;">
+  <h2 style="margin: 0 0 25px 0; color: #1e3c72; font-size: 1.5em; font-weight: 600; border-bottom: 2px solid #1e3c72; padding-bottom: 10px;">Stratejik Satış Planlaması</h2>
+  
+  <div class="strategic-input-form" style="background: #f8f9fa; padding: 25px; border-radius: 8px; margin-bottom: 25px;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; max-width: 500px;">
+      <div>
+        <label for="strategic-target-sales" style="display: block; margin-bottom: 8px; color: #666; font-size: 14px; font-weight: 500;">Hedef Satış Adedi *</label>
+        <input type="number" id="strategic-target-sales" min="1" placeholder="Örn: 5000" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+      </div>
+      
+      <div>
+        <label for="strategic-target-months" style="display: block; margin-bottom: 8px; color: #666; font-size: 14px; font-weight: 500;">Hedef Süre (Ay)</label>
+        <input type="number" id="strategic-target-months" min="1" value="6" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+      </div>
+    </div>
+    
+    <button id="analyze-strategic-btn" style="padding: 12px 30px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(30,60,114,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Analiz Et</button>
+  </div>
+  
+  <div id="strategic-results" style="display: none;">
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 25px; margin-bottom: 25px;">
+      <div class="strategic-input-form" style="background: #f8f9fa; padding: 25px; border-radius: 8px;">
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px;">
+          <div>
+            <label for="strategic-target-sales-results" style="display: block; margin-bottom: 8px; color: #666; font-size: 14px; font-weight: 500;">Hedef Satış Adedi *</label>
+            <input type="number" id="strategic-target-sales-results" min="1" placeholder="Örn: 5000" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+          </div>
+          
+          <div>
+            <label for="strategic-target-months-results" style="display: block; margin-bottom: 8px; color: #666; font-size: 14px; font-weight: 500;">Hedef Süre (Ay)</label>
+            <input type="number" id="strategic-target-months-results" min="1" value="6" style="width: 100%; padding: 10px 12px; border: 1px solid #ddd; border-radius: 6px; font-size: 14px; box-sizing: border-box;">
+          </div>
+        </div>
+        
+        <button id="analyze-strategic-btn-results" style="padding: 12px 30px; background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; border: none; border-radius: 6px; font-size: 15px; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; width: 100%;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(30,60,114,0.3)'" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='none'">Analiz Et</button>
+      </div>
+      
+      <div class="strategic-analysis-summary" style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 20px; border-radius: 8px;">
+        <h3 style="margin: 0 0 15px 0; font-size: 1.1em; font-weight: 600;">Son 6 Ay Analizi</h3>
+        <div style="display: flex; flex-direction: column; gap: 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <span style="font-size: 0.9em; opacity: 0.9;">Toplam Satış</span>
+            <span id="strategic-total-sales" style="font-size: 1.3em; font-weight: 700;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <span style="font-size: 0.9em; opacity: 0.9;">Aylık Ortalama</span>
+            <span id="strategic-monthly-avg" style="font-size: 1.3em; font-weight: 700;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid rgba(255,255,255,0.2);">
+            <span style="font-size: 0.9em; opacity: 0.9;">Hedef Aylık</span>
+            <span id="strategic-target-monthly" style="font-size: 1.3em; font-weight: 700;">-</span>
+          </div>
+          <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0;">
+            <span style="font-size: 0.9em; opacity: 0.9;">Satış Açığı</span>
+            <span id="strategic-shortfall" style="font-size: 1.3em; font-weight: 700;">-</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="strategic-recommendations-section">
+      <h3 style="margin: 0 0 15px 0; color: #333; font-size: 1.1em; font-weight: 600;">Sistem Önerileri</h3>
+      <div id="strategic-recommendations-list" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px;"></div>
+    </div>
+  </div>
+  
+  <div id="strategic-loading" style="display: none; text-align: center; padding: 40px; color: #666;">
+    <div style="font-size: 1.1em; margin-bottom: 10px;">Analiz yapılıyor...</div>
+    <div style="font-size: 0.9em; opacity: 0.7;">Lütfen bekleyin</div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
+<script src="https://d3js.org/d3.v7.min.js"></script>
+<script>
+  Chart.register(ChartDataLabels);
+  let charts = {};
+  let filters = {
+    fuel_type: '',
+    body_type: '',
+    region_id: '',
+    year: ''
+  };
+
+  let filterOptions = {
+    fuelTypes: [],
+    bodyTypes: [],
+    regions: [],
+    years: []
+  };
+
+  async function loadFilters() {
+    try {
+      const response = await fetch('/api/filters');
+      const result = await response.json();
+      if (result.success) {
+        filterOptions = {
+          fuelTypes: result.data.fuelTypes,
+          bodyTypes: result.data.bodyTypes,
+          regions: result.data.regions,
+          years: result.data.years
+        };
+        
+        const fuelTypeSelect = document.getElementById('filter-fuel-type');
+        const bodyTypeSelect = document.getElementById('filter-body-type');
+        const regionSelect = document.getElementById('filter-region');
+        const yearSelect = document.getElementById('filter-year');
+        
+        filterOptions.fuelTypes.forEach(fuelType => {
+          const option = document.createElement('option');
+          option.value = fuelType;
+          option.textContent = fuelType;
+          fuelTypeSelect.appendChild(option);
+        });
+        
+        filterOptions.bodyTypes.forEach(bodyType => {
+          const option = document.createElement('option');
+          option.value = bodyType;
+          option.textContent = bodyType;
+          bodyTypeSelect.appendChild(option);
+        });
+        
+        filterOptions.regions.forEach(region => {
+          const option = document.createElement('option');
+          option.value = region.region_id;
+          option.textContent = region.region_name;
+          regionSelect.appendChild(option);
+        });
+        
+        filterOptions.years.forEach(year => {
+          const option = document.createElement('option');
+          option.value = year;
+          option.textContent = year;
+          yearSelect.appendChild(option);
+        });
+        
+        fuelTypeSelect.value = filters.fuel_type || '';
+        bodyTypeSelect.value = filters.body_type || '';
+        regionSelect.value = filters.region_id || '';
+        yearSelect.value = filters.year || '';
+        
+        fuelTypeSelect.addEventListener('change', function() {
+          filters.fuel_type = this.value || '';
+          loadDashboardData();
+        });
+        
+        bodyTypeSelect.addEventListener('change', function() {
+          filters.body_type = this.value || '';
+          loadDashboardData();
+        });
+        
+        regionSelect.addEventListener('change', function() {
+          filters.region_id = this.value || '';
+          loadDashboardData();
+        });
+        
+        yearSelect.addEventListener('change', function() {
+          filters.year = this.value || '';
+          loadDashboardData();
+        });
+        
+        const resetFiltersBtn = document.getElementById('reset-filters-btn');
+        if (resetFiltersBtn) {
+          resetFiltersBtn.addEventListener('click', function() {
+            filters.fuel_type = '';
+            filters.body_type = '';
+            filters.region_id = '';
+            filters.year = '';
+            
+            if (fuelTypeSelect) fuelTypeSelect.value = '';
+            if (bodyTypeSelect) bodyTypeSelect.value = '';
+            if (regionSelect) regionSelect.value = '';
+            if (yearSelect) yearSelect.value = '';
+            
+            updateActiveFilters();
+            loadDashboardData();
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Filtreler yüklenirken hata:', error);
+    }
+  }
+
+  function updateActiveFilters() {
+    const activeFiltersContainer = document.getElementById('active-filters');
+    const filterChipsContainer = document.getElementById('filter-chips');
+    filterChipsContainer.innerHTML = '';
+    
+    const fuelTypeSelect = document.getElementById('filter-fuel-type');
+    const bodyTypeSelect = document.getElementById('filter-body-type');
+    const regionSelect = document.getElementById('filter-region');
+    const yearSelect = document.getElementById('filter-year');
+    
+    if (fuelTypeSelect) fuelTypeSelect.value = filters.fuel_type || '';
+    if (bodyTypeSelect) bodyTypeSelect.value = filters.body_type || '';
+    if (regionSelect) regionSelect.value = filters.region_id || '';
+    if (yearSelect) yearSelect.value = filters.year || '';
+
+    const hasActiveFilters = filters.fuel_type || filters.body_type || filters.region_id || filters.year;
+    
+    if (!hasActiveFilters) {
+      activeFiltersContainer.style.display = 'none';
+      return;
+    }
+
+    activeFiltersContainer.style.display = 'block';
+
+    if (filters.fuel_type) {
+      const chip = document.createElement('div');
+      chip.className = 'filter-chip';
+      chip.innerHTML = `
+        <span>Yakıt Tipi: ${filters.fuel_type}</span>
+        <button class="chip-remove" data-filter="fuel_type">×</button>
+      `;
+      filterChipsContainer.appendChild(chip);
+    }
+
+    if (filters.body_type) {
+      const chip = document.createElement('div');
+      chip.className = 'filter-chip';
+      chip.innerHTML = `
+        <span>Kasa Tipi: ${filters.body_type}</span>
+        <button class="chip-remove" data-filter="body_type">×</button>
+      `;
+      filterChipsContainer.appendChild(chip);
+    }
+
+    if (filters.region_id) {
+      const region = filterOptions.regions.find(r => String(r.region_id) === String(filters.region_id));
+      const regionName = region ? region.region_name : filters.region_id;
+      const chip = document.createElement('div');
+      chip.className = 'filter-chip';
+      chip.innerHTML = `
+        <span>Bölge: ${regionName}</span>
+        <button class="chip-remove" data-filter="region_id">×</button>
+      `;
+      filterChipsContainer.appendChild(chip);
+    }
+
+    if (filters.year) {
+      const chip = document.createElement('div');
+      chip.className = 'filter-chip';
+      chip.innerHTML = `
+        <span>Yıl: ${filters.year}</span>
+        <button class="chip-remove" data-filter="year">×</button>
+      `;
+      filterChipsContainer.appendChild(chip);
+    }
+
+    filterChipsContainer.querySelectorAll('.chip-remove').forEach(btn => {
+      btn.addEventListener('click', function() {
+        const filterType = this.getAttribute('data-filter');
+        filters[filterType] = '';
+        updateActiveFilters();
+        loadDashboardData();
+      });
+    });
+  }
+
+  async function loadDashboardData() {
+    try {
+      const params = new URLSearchParams();
+      if (filters.fuel_type && filters.fuel_type.trim() !== '') {
+        params.append('fuel_type', filters.fuel_type);
+      }
+      if (filters.body_type && filters.body_type.trim() !== '') {
+        params.append('body_type', filters.body_type);
+      }
+      if (filters.region_id && filters.region_id !== 'undefined' && filters.region_id.trim() !== '') {
+        params.append('region_id', filters.region_id);
+      }
+      if (filters.year && filters.year !== 'undefined' && filters.year.toString().trim() !== '') {
+        params.append('year', filters.year);
+      }
+      
+      const response = await fetch(`/api/dashboard-data?${params.toString()}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        const { topModels, byRegion, byYear, byMonth, byFuelType, byBodyType, byBodyTypeAndFuelType, byQuarter, byQuarterAndModel, byMonthAndFuelType, topDealer, topCity, modelCount } = result.data;
+        
+        if (!topModels || !byRegion || !byMonth || !byQuarter) {
+          console.error('Eksik veri:', { topModels, byRegion, byMonth, byQuarter });
+          return;
+        }
+        
+        try {
+          updateStats(topModels, byRegion, byMonth, modelCount, topDealer, topCity);
+          if (topModels.length > 0) {
+            updateTopModelsChart('chart-top-models', topModels.slice(0, 5));
+          }
+        const byRegionWithId = byRegion.map(region => ({
+          ...region,
+          region_id: region.region_id || region.regionId || region.REGION_ID
+        }));
+        updateTreemapChart('chart-by-region', byRegionWithId, filters);
+          if (byMonth.length > 0) {
+            const monthData = byMonth.slice(0, 12).reverse().map(m => ({
+              ...m,
+              month_label: m.month_name
+            }));
+            updateChart('chart-by-month', monthData, 'line', 'month_label', 'total_sales', '');
+          }
+          if (byFuelType && byFuelType.length > 0) {
+            updateChart('chart-by-fuel-type', byFuelType, 'doughnut', 'fuel_type', 'total_sales', 'Yakıt Tipi', 'fuel_type');
+          }
+          if (byBodyTypeAndFuelType && byBodyTypeAndFuelType.length > 0) {
+            updateBodyFuelTypeChart('chart-by-body-fuel-type', byBodyTypeAndFuelType);
+          }
+          if (byQuarterAndModel && byQuarterAndModel.length > 0) {
+            updateQuarterModelChart('chart-by-quarter-model', byQuarterAndModel);
+          }
+          if (byMonthAndFuelType && byMonthAndFuelType.length > 0) {
+            updateMonthFuelTrendChart('chart-month-fuel-trend', byMonthAndFuelType);
+          }
+        } catch (chartError) {
+          console.error('Grafik güncelleme hatası:', chartError);
+        }
+        updateActiveFilters();
+      } else {
+        console.error('API hatası:', result.message);
+      }
+    } catch (error) {
+      console.error('Dashboard verileri yüklenirken hata:', error);
+    }
+  }
+
+  function updateStats(topModels, byRegion, byMonth, modelCount, topDealer, topCity) {
+    const totalSales = byRegion.reduce((sum, r) => sum + r.total_sales, 0);
+    document.getElementById('total-sales').textContent = totalSales.toLocaleString('tr-TR');
+    
+    let avgMonthlySales = 0;
+    if (byMonth && byMonth.length > 0) {
+      const totalMonthlySales = byMonth.reduce((sum, m) => sum + m.total_sales, 0);
+      avgMonthlySales = Math.round(totalMonthlySales / byMonth.length);
+    }
+    document.getElementById('avg-monthly-sales').textContent = avgMonthlySales.toLocaleString('tr-TR');
+    
+    const topModelName = topModels && topModels.length > 0 ? topModels[0].model_name : '-';
+    document.getElementById('top-model').textContent = topModelName;
+    
+    const dealerName = topDealer && topDealer.dealer_name ? topDealer.dealer_name : '-';
+    document.getElementById('top-dealer').textContent = dealerName;
+    
+    const dealerCity = topDealer && topDealer.city_name ? topDealer.city_name : '';
+    const dealerCityElement = document.getElementById('top-dealer-city');
+    if (dealerCity) {
+      dealerCityElement.textContent = dealerCity;
+    } else {
+      dealerCityElement.textContent = '';
+    }
+    
+    const cityName = topCity && topCity.city_name ? topCity.city_name : '-';
+    document.getElementById('top-city').textContent = cityName;
+  }
+
+  function updateTopModelsChart(canvasId, data) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    
+    if (charts[canvasId]) {
+      charts[canvasId].destroy();
+    }
+    
+    const labels = data.map(item => {
+      const fuelType = item.fuel_type ? item.fuel_type : '';
+      return fuelType ? `${item.model_name} - ${fuelType}` : item.model_name;
+    });
+    const values = data.map(item => item.total_sales);
+    const primaryColor = 'rgba(30, 60, 114, 0.85)';
+    
+    charts[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: 'Satış',
+          data: values,
+          backgroundColor: primaryColor,
+          borderColor: 'rgba(30, 60, 114, 1)',
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: 'rgba(30, 60, 114, 1)',
+            borderWidth: 1,
+            padding: 12,
+            titleFont: {
+              size: 14,
+              weight: 'bold'
+            },
+            bodyFont: {
+              size: 13
+            },
+            callbacks: {
+              title: function(context) {
+                return context[0].label;
+              },
+              label: function(context) {
+                const value = context.parsed && context.parsed.y !== undefined 
+                  ? context.parsed.y 
+                  : (context.raw !== undefined ? context.raw : 0);
+                return 'Satış: ' + (typeof value === 'number' ? value.toLocaleString('tr-TR') : String(value));
+              }
+            }
+          },
+          datalabels: {
+            anchor: 'end',
+            align: 'top',
+            formatter: function(value) {
+              return value.toLocaleString('tr-TR');
+            },
+            font: {
+              size: 12,
+              weight: 'bold'
+            },
+            color: '#333',
+            padding: {
+              top: 5
+            },
+            clip: false
+          }
+        },
+        layout: {
+          padding: {
+            top: 20,
+            bottom: 10,
+            left: 10,
+            right: 10
+          }
+        },
+        layout: {
+          padding: {
+            top: 20,
+            bottom: 10,
+            left: 10,
+            right: 10
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            display: false,
+            grid: {
+              display: false
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 11
+              }
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  }
+
+  function updateChart(canvasId, data, type, labelKey, valueKey, title, filterKey = null) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    
+    if (charts[canvasId]) {
+      charts[canvasId].destroy();
+    }
+    
+    const labels = data.map(item => item[labelKey]);
+    const values = data.map(item => item[valueKey]);
+    
+    const colors = generateColors(data.length, type);
+    
+    const isMonthlyChart = canvasId === 'chart-by-month';
+    const isPieChart = type === 'pie' || type === 'doughnut';
+    
+    charts[canvasId] = new Chart(ctx, {
+      type: type,
+      data: {
+        labels: labels,
+        datasets: [{
+          label: title,
+          data: values,
+          backgroundColor: isMonthlyChart ? 'rgba(30, 60, 114, 0.3)' : colors.background,
+          borderColor: colors.border,
+          borderWidth: isMonthlyChart ? 4 : 2,
+          tension: isMonthlyChart ? 0.4 : 0,
+          pointRadius: isMonthlyChart ? 0 : 3,
+          pointHoverRadius: isMonthlyChart ? 0 : 5,
+          pointBackgroundColor: isMonthlyChart ? 'transparent' : colors.background,
+          pointBorderColor: isMonthlyChart ? 'transparent' : colors.border,
+          pointBorderWidth: isMonthlyChart ? 0 : 1,
+          fill: isMonthlyChart ? true : false
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: isMonthlyChart ? false : true,
+        layout: {
+          padding: {
+            top: isPieChart ? 10 : (isMonthlyChart ? 10 : 0),
+            bottom: isPieChart ? 10 : (isMonthlyChart ? 10 : 0),
+            left: isPieChart ? 10 : (isMonthlyChart ? 10 : 0),
+            right: isPieChart ? 10 : (isMonthlyChart ? 10 : 0)
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        onClick: filterKey ? (event, elements) => {
+          if (elements.length > 0) {
+            const index = elements[0].index;
+            const selectedValue = data[index][labelKey];
+            if (filters[filterKey] === selectedValue) {
+              filters[filterKey] = '';
+            } else {
+              filters[filterKey] = selectedValue;
+            }
+            loadDashboardData();
+          }
+        } : undefined,
+        plugins: {
+          legend: {
+            position: 'bottom',
+            display: true,
+            labels: {
+              padding: 15,
+              font: {
+                size: 12
+              },
+              usePointStyle: true
+            }
+          },
+          tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: 'rgba(30, 60, 114, 1)',
+            borderWidth: 2,
+            padding: 15,
+            titleFont: {
+              size: 15,
+              weight: 'bold'
+            },
+            bodyFont: {
+              size: 14
+            },
+            displayColors: true,
+            callbacks: {
+              title: function(context) {
+                return context[0].label;
+              },
+              label: function(context) {
+                if (isPieChart) {
+                  const value = context.raw || 0;
+                  const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                  const percentage = ((value / total) * 100).toFixed(2);
+                  return [
+                    'Satış: ' + value.toLocaleString('tr-TR'),
+                    'Oran: %' + percentage
+                  ];
+                } else {
+                  let label = context.dataset.label || '';
+                  if (label) {
+                    label += ': ';
+                  }
+                  const value = context.parsed !== null && context.parsed !== undefined 
+                    ? (context.parsed.y !== undefined ? context.parsed.y : context.parsed) 
+                    : (context.raw !== undefined ? context.raw : 0);
+                  label += typeof value === 'number' ? value.toLocaleString('tr-TR') : String(value);
+                  return label;
+                }
+              }
+            }
+          },
+          datalabels: {
+            display: isPieChart,
+            color: '#333',
+            font: {
+              size: 10,
+              weight: 'normal'
+            },
+            formatter: function(value, context) {
+              if (!isPieChart) return '';
+              const label = context.chart.data.labels[context.dataIndex] || '';
+              const total = context.dataset.data.reduce((a, b) => a + b, 0);
+              if (total === 0) return '';
+              const percentage = ((value / total) * 100).toFixed(1);
+              return label + '\n' + percentage + '%';
+            },
+            anchor: 'center',
+            align: 'center',
+            offset: 0,
+            padding: 2,
+            clip: false
+          }
+        },
+        scales: type === 'line' || type === 'bar' ? {
+          y: {
+            beginAtZero: true,
+            grid: {
+              color: 'rgba(0, 0, 0, 0.05)'
+            },
+            ticks: {
+              stepSize: isMonthlyChart ? 10 : undefined,
+              font: {
+                size: 11
+              }
+            }
+          },
+          x: {
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 11
+              }
+            }
+          }
+        } : {}
+      },
+      plugins: isPieChart ? [ChartDataLabels] : []
+    });
+  }
+
+  function updateBodyFuelTypeChart(canvasId, data) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    
+    if (charts[canvasId]) {
+      charts[canvasId].destroy();
+    }
+    
+    
+    if (!data || data.length === 0) {
+      return;
+    }
+    
+    const filteredData = data.filter(d => d.body_type && d.body_type.trim() !== 'Van');
+    
+    if (filteredData.length === 0) {
+      return;
+    }
+    
+    let bodyTypes = [...new Set(filteredData.map(item => item.body_type).filter(Boolean))];
+    const fuelTypes = [...new Set(filteredData.map(item => item.fuel_type).filter(Boolean))];
+    
+    const bodyTypeTotals = bodyTypes.map(bodyType => {
+      return filteredData.filter(d => d.body_type === bodyType)
+        .reduce((sum, d) => sum + d.total_sales, 0);
+    });
+    
+    const validBodyTypes = [];
+    const validBodyTypeTotals = [];
+    
+    bodyTypes.forEach((bodyType, index) => {
+      if (bodyTypeTotals[index] > 0) {
+        validBodyTypes.push(bodyType);
+        validBodyTypeTotals.push(bodyTypeTotals[index]);
+      }
+    });
+    
+    if (validBodyTypes.length === 0) {
+      return;
+    }
+    
+    const fuelTypeColors = [
+      'rgba(30, 60, 114, 0.8)',
+      'rgba(220, 53, 69, 0.8)',
+      'rgba(40, 167, 69, 0.8)',
+      'rgba(255, 193, 7, 0.8)',
+      'rgba(23, 162, 184, 0.8)',
+      'rgba(108, 117, 125, 0.8)',
+      'rgba(255, 87, 34, 0.8)',
+      'rgba(156, 39, 176, 0.8)'
+    ];
+    
+    const datasets = fuelTypes.map((fuelType, index) => {
+      const fuelData = validBodyTypes.map(bodyType => {
+        const item = filteredData.find(d => d.body_type === bodyType && d.fuel_type === fuelType);
+        if (item && item.total_sales > 0) {
+          return item.total_sales;
+        }
+        return null;
+      });
+      
+      const hasAnyData = fuelData.some(val => val !== null && val > 0);
+      
+      if (!hasAnyData) {
+        return null;
+      }
+      
+      return {
+        label: fuelType,
+        data: fuelData,
+        backgroundColor: fuelTypeColors[index % fuelTypeColors.length],
+        borderColor: fuelTypeColors[index % fuelTypeColors.length].replace('0.8', '1'),
+        borderWidth: 1
+      };
+    }).filter(dataset => dataset !== null);
+    
+    charts[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: validBodyTypes,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: {
+          padding: {
+            top: 10,
+            bottom: 10,
+            left: 10,
+            right: 10
+          }
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          legend: {
+            position: 'bottom',
+            labels: {
+              padding: 15,
+              font: {
+                size: 12
+              },
+              usePointStyle: false,
+              boxWidth: 15,
+              boxHeight: 15
+            }
+          },
+          tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: 'rgba(30, 60, 114, 1)',
+            borderWidth: 2,
+            padding: 15,
+            titleFont: {
+              size: 15,
+              weight: 'bold'
+            },
+            bodyFont: {
+              size: 14
+            },
+            displayColors: true,
+            callbacks: {
+              title: function(context) {
+                if (context.length > 0) {
+                  return context[0].label;
+                }
+                return '';
+              },
+              label: function(context) {
+                const value = context.parsed.y;
+                if (value === null || value === undefined || value === 0 || isNaN(value)) {
+                  return '';
+                }
+                const bodyType = context.label;
+                const bodyTypeIndex = validBodyTypes.indexOf(bodyType);
+                const total = validBodyTypeTotals[bodyTypeIndex] || 0;
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                return context.dataset.label + ': ' + value.toLocaleString('tr-TR') + ' (%' + percentage + ')';
+              },
+              labelColor: function(context) {
+                return {
+                  borderColor: context.dataset.borderColor,
+                  backgroundColor: context.dataset.borderColor
+                };
+              },
+            }
+          },
+          datalabels: {
+            display: true,
+            color: '#fff',
+            font: {
+              size: 11,
+              weight: 'bold'
+            },
+            formatter: function(value, context) {
+              if (value === null || value === 0) {
+                return '';
+              }
+              return value.toLocaleString('tr-TR');
+            },
+            anchor: 'center',
+            align: 'center',
+            clip: false
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 11
+              }
+            }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            display: false,
+            grid: {
+              display: false
+            },
+            ticks: {
+              display: false
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  }
+
+  function updateQuarterModelChart(canvasId, data) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    
+    if (charts[canvasId]) {
+      charts[canvasId].destroy();
+    }
+    
+    if (!data || data.length === 0) {
+      return;
+    }
+    
+    const quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
+    const quarterMap = {};
+    data.forEach(item => {
+      const quarterKey = `Q${item.quarter}`;
+      if (!quarterMap[quarterKey]) {
+        quarterMap[quarterKey] = {};
+      }
+      const modelKey = item.fuel_type ? `${item.model_name} - ${item.fuel_type}` : item.model_name;
+      if (!quarterMap[quarterKey][modelKey]) {
+        quarterMap[quarterKey][modelKey] = 0;
+      }
+      quarterMap[quarterKey][modelKey] += Number(item.total_sales);
+    });
+    
+    const quarterTopModels = {};
+    quarters.forEach(quarter => {
+      if (quarterMap[quarter]) {
+        const quarterModels = Object.keys(quarterMap[quarter]);
+        const sortedQuarterModels = quarterModels.sort((a, b) => {
+          return quarterMap[quarter][b] - quarterMap[quarter][a];
+        });
+        quarterTopModels[quarter] = sortedQuarterModels.slice(0, 5);
+      }
+    });
+    
+    const allTopModels = new Set();
+    Object.values(quarterTopModels).forEach(models => {
+      models.forEach(model => allTopModels.add(model));
+    });
+    
+    const topModels = Array.from(allTopModels);
+    
+    const colors = [
+      'rgba(30, 60, 114, 0.8)',
+      'rgba(102, 126, 234, 0.8)',
+      'rgba(54, 162, 235, 0.8)',
+      'rgba(75, 192, 192, 0.8)',
+      'rgba(153, 102, 255, 0.8)',
+      'rgba(255, 159, 64, 0.8)',
+      'rgba(255, 99, 132, 0.8)',
+      'rgba(255, 206, 86, 0.8)',
+      'rgba(118, 75, 162, 0.8)',
+      'rgba(46, 125, 50, 0.8)',
+      'rgba(156, 39, 176, 0.8)',
+      'rgba(233, 30, 99, 0.8)',
+      'rgba(244, 67, 54, 0.8)',
+      'rgba(255, 152, 0, 0.8)',
+      'rgba(76, 175, 80, 0.8)'
+    ];
+    
+    const datasets = topModels.map((model, index) => {
+      const data = quarters.map(quarter => {
+        if (quarterTopModels[quarter] && quarterTopModels[quarter].includes(model)) {
+          return quarterMap[quarter] && quarterMap[quarter][model] ? Number(quarterMap[quarter][model]) : 0;
+        }
+        return null;
+      });
+      
+      return {
+        label: model,
+        data: data,
+        backgroundColor: colors[index % colors.length],
+        borderColor: colors[index % colors.length].replace('0.8', '1'),
+        borderWidth: 1
+      };
+    });
+    
+    const quarterTotals = quarters.map(quarter => {
+      if (quarterTopModels[quarter]) {
+        return quarterTopModels[quarter].reduce((sum, model) => {
+          return sum + (quarterMap[quarter] && quarterMap[quarter][model] ? Number(quarterMap[quarter][model]) : 0);
+        }, 0);
+      }
+      return 0;
+    });
+    
+    console.log('Quarter Map:', quarterMap);
+    console.log('Quarter Top Models:', quarterTopModels);
+    console.log('Quarter Totals:', quarterTotals);
+    
+    charts[canvasId] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: quarters,
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: {
+            display: false
+          },
+          tooltip: {
+            enabled: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: 'rgba(30, 60, 114, 1)',
+            borderWidth: 2,
+            padding: 15,
+            titleFont: {
+              size: 15,
+              weight: 'bold'
+            },
+            bodyFont: {
+              size: 14
+            },
+            displayColors: true,
+            callbacks: {
+              title: function(context) {
+                if (context.length > 0) {
+                  return context[0].label;
+                }
+                return '';
+              },
+              label: function(context) {
+                const value = context.parsed.y;
+                if (value === null || value === undefined || value === 0 || isNaN(value)) {
+                  return '';
+                }
+                const quarterIndex = context.dataIndex;
+                const total = quarterTotals[quarterIndex] || 0;
+                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                return context.dataset.label + ': ' + value.toLocaleString('tr-TR') + ' (%' + percentage + ')';
+              },
+              labelColor: function(context) {
+                return {
+                  borderColor: context.dataset.borderColor,
+                  backgroundColor: context.dataset.borderColor
+                };
+              }
+            }
+          },
+          datalabels: {
+            display: true,
+            color: '#fff',
+            font: {
+              size: 11,
+              weight: 'bold'
+            },
+            formatter: function(value, context) {
+              if (value === null || value === 0) {
+                return '';
+              }
+              return value.toLocaleString('tr-TR');
+            },
+            anchor: 'center',
+            align: 'center',
+            clip: false
+          }
+        },
+        scales: {
+          x: {
+            stacked: true,
+            grid: {
+              display: false
+            },
+            ticks: {
+              font: {
+                size: 12
+              }
+            }
+          },
+          y: {
+            stacked: true,
+            beginAtZero: true,
+            display: false,
+            grid: {
+              display: false
+            },
+            ticks: {
+              display: false
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  }
+
+  function updateMonthFuelTrendChart(canvasId, data) {
+    const canvas = document.getElementById(canvasId);
+    const ctx = canvas.getContext('2d');
+    
+    if (charts[canvasId]) {
+      charts[canvasId].destroy();
+    }
+    
+    if (!data || data.length === 0) {
+      return;
+    }
+    
+    const sortedData = data.sort((a, b) => {
+      if (a.year !== b.year) {
+        return b.year - a.year;
+      }
+      return b.month - a.month;
+    });
+    
+    const uniqueMonths = [];
+    const seenMonths = new Set();
+    
+    for (const item of sortedData) {
+      const monthKey = `${item.year}-${String(item.month).padStart(2, '0')}`;
+      if (!seenMonths.has(monthKey)) {
+        uniqueMonths.push({
+          year: item.year,
+          month: item.month,
+          month_name: item.month_name
+        });
+        seenMonths.add(monthKey);
+        if (uniqueMonths.length >= 12) {
+          break;
+        }
+      }
+    }
+    
+    uniqueMonths.reverse();
+    
+    const fuelTypes = [...new Set(data.map(item => item.fuel_type).filter(Boolean))];
+    
+    const fuelTypeColors = {
+      'Benzin': 'rgba(30, 60, 114, 0.8)',
+      'Dizel': 'rgba(220, 53, 69, 0.8)',
+      'Elektrik': 'rgba(40, 167, 69, 0.8)',
+      'Hibrit': 'rgba(255, 193, 7, 0.8)',
+      'Plug-in Hibrit': 'rgba(23, 162, 184, 0.8)'
+    };
+    
+    const defaultColor = 'rgba(128, 128, 128, 0.8)';
+    
+    const datasets = fuelTypes.map((fuelType, index) => {
+      const fuelData = uniqueMonths.map(month => {
+        const item = data.find(d => 
+          d.year == month.year && 
+          d.month == month.month && 
+          d.fuel_type === fuelType
+        );
+        return item ? item.total_sales : 0;
+      });
+      
+      const color = fuelTypeColors[fuelType] || defaultColor;
+      
+      return {
+        label: fuelType,
+        data: fuelData,
+        borderColor: color,
+        backgroundColor: color.replace('0.8', '0.2'),
+        borderWidth: 3,
+        fill: false,
+        tension: 0.4,
+        pointRadius: 0,
+        pointHoverRadius: 0
+      };
+    });
+    
+    charts[canvasId] = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels: uniqueMonths.map(month => month.month_name),
+        datasets: datasets
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        },
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+            labels: {
+              boxWidth: 12,
+              padding: 10,
+              font: {
+                size: 12
+              }
+            }
+          },
+          tooltip: {
+            backgroundColor: 'rgba(0, 0, 0, 0.9)',
+            titleColor: '#fff',
+            bodyColor: '#fff',
+            borderColor: 'rgba(30, 60, 114, 1)',
+            borderWidth: 2,
+            padding: 12,
+            callbacks: {
+              label: function(context) {
+                return context.dataset.label + ': ' + context.parsed.y.toLocaleString('tr-TR');
+              }
+            }
+          },
+          datalabels: {
+            display: false
+          }
+        },
+        scales: {
+          x: {
+            grid: {
+              display: true,
+              color: 'rgba(0, 0, 0, 0.1)'
+            },
+            ticks: {
+              font: {
+                size: 11
+              },
+              maxRotation: 45,
+              minRotation: 45
+            }
+          },
+          y: {
+            beginAtZero: true,
+            grid: {
+              display: true,
+              color: 'rgba(0, 0, 0, 0.1)'
+            },
+            ticks: {
+              display: false
+            }
+          }
+        }
+      },
+      plugins: [ChartDataLabels]
+    });
+  }
+
+  function updateTreemapChart(containerId, data, currentFilters) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+    
+    if (!data || data.length === 0) {
+      container.innerHTML = '<p style="text-align: center; padding: 40px; color: #999;">Veri bulunamadı.</p>';
+      return;
+    }
+    
+    const width = container.offsetWidth;
+    const containerRect = container.getBoundingClientRect();
+    const parentRect = container.parentElement ? container.parentElement.getBoundingClientRect() : null;
+    const availableHeight = parentRect ? (parentRect.height - 80) : 400;
+    const height = Math.max(400, availableHeight);
+    
+    container.style.height = height + 'px';
+    
+    const totalSales = data.reduce((sum, d) => sum + d.total_sales, 0);
+    
+    const root = d3.hierarchy({children: data})
+      .sum(d => d.total_sales)
+      .sort((a, b) => b.value - a.value);
+    
+    d3.treemap()
+      .size([width, height])
+      .padding(2)
+      (root);
+    
+    const svg = d3.select(container)
+      .append('svg')
+      .attr('width', width)
+      .attr('height', height);
+    
+    const colorScale = d3.scaleSequential()
+      .domain([0, data.length - 1])
+      .interpolator(d3.interpolateBlues);
+    
+    const cells = svg.selectAll('g')
+      .data(root.leaves())
+      .enter()
+      .append('g')
+      .attr('transform', d => `translate(${d.x0},${d.y0})`);
+    
+    cells.append('rect')
+      .attr('width', d => d.x1 - d.x0)
+      .attr('height', d => d.y1 - d.y0)
+      .attr('fill', (d, i) => {
+        const regionId = d.data.region_id || d.data.regionId || d.data.REGION_ID;
+        const isSelected = currentFilters && regionId && String(currentFilters.region_id) === String(regionId);
+        const colors = [
+          'rgba(30, 60, 114, 0.9)',
+          'rgba(102, 126, 234, 0.9)',
+          'rgba(54, 162, 235, 0.9)',
+          'rgba(75, 192, 192, 0.9)',
+          'rgba(153, 102, 255, 0.9)',
+          'rgba(255, 159, 64, 0.9)',
+          'rgba(255, 99, 132, 0.9)',
+          'rgba(255, 206, 86, 0.9)',
+          'rgba(118, 75, 162, 0.9)',
+          'rgba(46, 125, 50, 0.9)',
+          'rgba(156, 39, 176, 0.9)',
+          'rgba(244, 67, 54, 0.9)',
+          'rgba(33, 150, 243, 0.9)',
+          'rgba(0, 150, 136, 0.9)',
+          'rgba(255, 152, 0, 0.9)'
+        ];
+        const baseColor = colors[i % colors.length];
+        return isSelected ? baseColor.replace('0.9', '1') : baseColor;
+      })
+      .attr('stroke', '#fff')
+      .attr('stroke-width', (d) => {
+        const regionId = d.data.region_id || d.data.regionId || d.data.REGION_ID;
+        const isSelected = currentFilters && regionId && String(currentFilters.region_id) === String(regionId);
+        return isSelected ? 4 : 2;
+      })
+      .style('cursor', 'pointer')
+      .on('mouseover', function(event, d) {
+        d3.select(this)
+          .attr('opacity', 0.8)
+          .attr('stroke-width', 4);
+      })
+      .on('mouseout', function(event, d) {
+        const regionId = d.data.region_id || d.data.regionId || d.data.REGION_ID;
+        const isSelected = currentFilters && regionId && String(currentFilters.region_id) === String(regionId);
+        d3.select(this)
+          .attr('opacity', 1)
+          .attr('stroke-width', isSelected ? 4 : 2);
+      })
+    
+    cells.append('text')
+      .attr('x', d => (d.x1 - d.x0) / 2)
+      .attr('y', d => (d.y1 - d.y0) / 2 - 5)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#fff')
+      .attr('font-size', d => {
+        const area = (d.x1 - d.x0) * (d.y1 - d.y0);
+        return Math.sqrt(area) > 2000 ? '14px' : Math.sqrt(area) > 1000 ? '12px' : '10px';
+      })
+      .attr('font-weight', 'bold')
+      .text(d => d.data.region_name)
+      .style('pointer-events', 'none');
+    
+    cells.append('text')
+      .attr('x', d => (d.x1 - d.x0) / 2)
+      .attr('y', d => (d.y1 - d.y0) / 2 + 10)
+      .attr('text-anchor', 'middle')
+      .attr('fill', '#fff')
+      .attr('font-size', d => {
+        const area = (d.x1 - d.x0) * (d.y1 - d.y0);
+        return Math.sqrt(area) > 2000 ? '12px' : Math.sqrt(area) > 1000 ? '11px' : '9px';
+      })
+      .text(d => {
+        const percentage = ((d.value / totalSales) * 100).toFixed(1);
+        return `${d.value.toLocaleString('tr-TR')} (${percentage}%)`;
+      })
+      .style('pointer-events', 'none');
+    
+    let tooltip = d3.select('body').select('#treemap-tooltip');
+    if (tooltip.empty()) {
+      tooltip = d3.select('body').append('div')
+        .attr('id', 'treemap-tooltip')
+        .style('position', 'absolute')
+        .style('background', 'rgba(0, 0, 0, 0.8)')
+        .style('color', '#fff')
+        .style('padding', '10px')
+        .style('border-radius', '5px')
+        .style('pointer-events', 'none')
+        .style('opacity', 0)
+        .style('font-size', '13px')
+        .style('z-index', '1000');
+    }
+    
+    cells.selectAll('rect')
+      .on('mousemove', function(event, d) {
+        tooltip
+          .style('opacity', 1)
+          .html(`<strong>${d.data.region_name}</strong><br/>Satış: ${d.value.toLocaleString('tr-TR')}<br/>Oran: ${((d.value / totalSales) * 100).toFixed(2)}%`)
+          .style('left', (event.pageX + 10) + 'px')
+          .style('top', (event.pageY - 10) + 'px');
+      })
+      .on('mouseout', function() {
+        tooltip.style('opacity', 0);
+      })
+      .on('click', function(event, d) {
+        try {
+          event.stopPropagation();
+          event.preventDefault();
+          tooltip.style('opacity', 0);
+          
+          if (!d || !d.data) {
+            console.error('Geçersiz veri:', d);
+            return;
+          }
+          
+          const regionId = d.data.region_id || d.data.regionId || d.data.REGION_ID;
+          if (regionId === undefined || regionId === null || regionId === 'undefined' || regionId === 'null') {
+            console.error('Geçersiz region_id:', regionId, 'Veri objesi:', d.data);
+            return;
+          }
+          
+          const clickedRegionId = String(regionId);
+          const currentRegionId = String(filters.region_id || '');
+          
+          if (currentRegionId === clickedRegionId) {
+            filters.region_id = '';
+          } else {
+            filters.region_id = clickedRegionId;
+          }
+          
+          setTimeout(() => {
+            loadDashboardData();
+          }, 100);
+        } catch (error) {
+          console.error('Treemap click hatası:', error);
+        }
+      });
+  }
+
+  function generateColors(count, type) {
+    const backgrounds = [];
+    const borders = [];
+    
+    if (type === 'bar' || type === 'line') {
+      const primaryColor = 'rgba(30, 60, 114, 0.85)';
+      for (let i = 0; i < count; i++) {
+        backgrounds.push(primaryColor);
+        borders.push('rgba(30, 60, 114, 1)');
+      }
+    } else {
+      const distinctColors = [
+        'rgba(30, 60, 114, 0.9)',
+        'rgba(102, 126, 234, 0.9)',
+        'rgba(54, 162, 235, 0.9)',
+        'rgba(75, 192, 192, 0.9)',
+        'rgba(153, 102, 255, 0.9)',
+        'rgba(255, 159, 64, 0.9)',
+        'rgba(255, 99, 132, 0.9)',
+        'rgba(255, 206, 86, 0.9)',
+        'rgba(118, 75, 162, 0.9)',
+        'rgba(46, 125, 50, 0.9)',
+        'rgba(156, 39, 176, 0.9)',
+        'rgba(244, 67, 54, 0.9)',
+        'rgba(33, 150, 243, 0.9)',
+        'rgba(0, 150, 136, 0.9)',
+        'rgba(255, 152, 0, 0.9)'
+      ];
+      
+      for (let i = 0; i < count; i++) {
+        const color = distinctColors[i % distinctColors.length];
+        backgrounds.push(color);
+        borders.push(color.replace('0.9', '1'));
+      }
+    }
+    
+    return { background: backgrounds, border: borders };
+  }
+
+  async function analyzeStrategicRecommendations() {
+    const targetSales = document.getElementById('strategic-target-sales').value;
+    const targetMonths = document.getElementById('strategic-target-months').value || 6;
+    
+    if (!targetSales) {
+      alert('Lütfen hedef satış adedi bilgisini girin.');
+      return;
+    }
+    
+    const loadingDiv = document.getElementById('strategic-loading');
+    const resultsDiv = document.getElementById('strategic-results');
+    const initialInputForm = document.querySelector('.strategic-decision-section > .strategic-input-form');
+    
+    if (initialInputForm) {
+      initialInputForm.style.display = 'none';
+    }
+    
+    loadingDiv.style.display = 'block';
+    resultsDiv.style.display = 'none';
+    
+    try {
+      const response = await fetch('/api/strategic-recommendations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          targetSales: parseInt(targetSales),
+          targetMonths: parseInt(targetMonths)
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        displayStrategicResults(result.data);
+      } else {
+        alert('Analiz sırasında bir hata oluştu: ' + result.message);
+      }
+    } catch (error) {
+      console.error('Strategic recommendations analizi hatası:', error);
+      alert('Analiz sırasında bir hata oluştu.');
+    } finally {
+      loadingDiv.style.display = 'none';
+      resultsDiv.style.display = 'block';
+      const initialInputForm = document.querySelector('.strategic-decision-section > .strategic-input-form');
+      if (initialInputForm) {
+        initialInputForm.style.display = 'none';
+      }
+    }
+  }
+
+  function displayStrategicResults(data) {
+    const analysis = data.analysis;
+    const recommendations = data.recommendations;
+    
+    const targetSales = document.getElementById('strategic-target-sales').value;
+    const targetMonths = document.getElementById('strategic-target-months').value || 6;
+    
+    document.getElementById('strategic-target-sales-results').value = targetSales;
+    document.getElementById('strategic-target-months-results').value = targetMonths;
+    
+    document.getElementById('strategic-total-sales').textContent = analysis.totalSales.toLocaleString('tr-TR');
+    document.getElementById('strategic-monthly-avg').textContent = analysis.monthlyAverage.toLocaleString('tr-TR');
+    document.getElementById('strategic-target-monthly').textContent = analysis.targetMonthlyAverage.toLocaleString('tr-TR');
+    
+    const shortfall = analysis.shortfall;
+    document.getElementById('strategic-shortfall').textContent = shortfall > 0 ? `+${shortfall.toLocaleString('tr-TR')}` : shortfall.toLocaleString('tr-TR');
+    
+    const shortfallEl = document.getElementById('strategic-shortfall');
+    if (shortfall > 0) {
+      shortfallEl.style.color = '#ff6b6b';
+    } else {
+      shortfallEl.style.color = '#6bcf7f';
+    }
+    
+    const recommendationsList = document.getElementById('strategic-recommendations-list');
+    recommendationsList.innerHTML = '';
+    
+    recommendations.forEach((rec, index) => {
+      const recCard = document.createElement('div');
+      recCard.style.cssText = 'background: white; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; transition: all 0.3s;';
+      
+      recCard.onmouseover = function() {
+        this.style.transform = 'translateX(-2px)';
+        this.style.boxShadow = '0 2px 8px rgba(0,0,0,0.1)';
+      };
+      recCard.onmouseout = function() {
+        this.style.transform = 'translateX(0)';
+        this.style.boxShadow = 'none';
+      };
+      
+      const priorityBadge = rec.priority === 1 ? '<span style="background: #ff6b6b; color: white; padding: 2px 8px; border-radius: 10px; font-size: 0.7em; font-weight: 600;">YÜKSEK</span>' : 
+                           rec.priority === 2 ? '<span style="background: #ffd93d; color: #333; padding: 2px 8px; border-radius: 10px; font-size: 0.7em; font-weight: 600;">ORTA</span>' : 
+                           '<span style="background: #95e1d3; color: #333; padding: 2px 8px; border-radius: 10px; font-size: 0.7em; font-weight: 600;">DÜŞÜK</span>';
+      
+      let listItems = '';
+      if (rec.listItems && Array.isArray(rec.listItems)) {
+        listItems = rec.listItems.map(item => `<li style="margin: 4px 0; font-size: 0.85em;">${item}</li>`).join('');
+      } else if (rec.list) {
+        listItems = rec.list.split(', ').map(item => `<li style="margin: 4px 0; font-size: 0.85em;">${item}</li>`).join('');
+      }
+      
+      recCard.innerHTML = `
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px;">
+          <h4 style="margin: 0; color: #333; font-size: 0.9em; font-weight: 600;">${rec.title}</h4>
+          ${priorityBadge}
+        </div>
+        ${rec.metric ? `
+        <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); color: white; padding: 12px; border-radius: 6px; text-align: center; margin-bottom: 10px;">
+          <div style="font-size: 0.75em; opacity: 0.9; margin-bottom: 4px;">${rec.metricLabel}</div>
+          <div style="font-size: 2em; font-weight: 700; line-height: 1;">${rec.metric}</div>
+        </div>
+        ` : ''}
+        ${listItems ? `
+        <div style="background: #f8f9fa; padding: 10px; border-radius: 6px; margin-bottom: 8px;">
+          <ul style="margin: 0; padding-left: 20px; color: #333;">
+            ${listItems}
+          </ul>
+        </div>
+        ` : ''}
+        <p style="margin: 0; color: #666; line-height: 1.3; font-size: 0.8em;">${rec.description}</p>
+      `;
+      
+      recommendationsList.appendChild(recCard);
+    });
+    
+    document.getElementById('strategic-results').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const analyzeStrategicBtn = document.getElementById('analyze-strategic-btn');
+    if (analyzeStrategicBtn) {
+      analyzeStrategicBtn.addEventListener('click', analyzeStrategicRecommendations);
+    }
+    
+    const analyzeStrategicBtnResults = document.getElementById('analyze-strategic-btn-results');
+    if (analyzeStrategicBtnResults) {
+      analyzeStrategicBtnResults.addEventListener('click', function() {
+        const targetSales = document.getElementById('strategic-target-sales-results').value;
+        const targetMonths = document.getElementById('strategic-target-months-results').value || 6;
+        
+        document.getElementById('strategic-target-sales').value = targetSales;
+        document.getElementById('strategic-target-months').value = targetMonths;
+        
+        analyzeStrategicRecommendations();
+      });
+    }
+    
+    const strategicTargetSalesInput = document.getElementById('strategic-target-sales');
+    if (strategicTargetSalesInput) {
+      strategicTargetSalesInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          analyzeStrategicRecommendations();
+        }
+      });
+    }
+    
+    const strategicTargetSalesInputResults = document.getElementById('strategic-target-sales-results');
+    if (strategicTargetSalesInputResults) {
+      strategicTargetSalesInputResults.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          const targetSales = document.getElementById('strategic-target-sales-results').value;
+          const targetMonths = document.getElementById('strategic-target-months-results').value || 6;
+          
+          document.getElementById('strategic-target-sales').value = targetSales;
+          document.getElementById('strategic-target-months').value = targetMonths;
+          
+          analyzeStrategicRecommendations();
+        }
+      });
+    }
+  });
+
+  loadFilters();
+  loadDashboardData();
+</script>
+
+<style>
+  .active-filters {
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    padding: 20px;
+    border-radius: 12px;
+    margin-bottom: 30px;
+    border: 1px solid #e0e0e0;
+  }
+  .active-filters h3 {
+    color: #1e3c72;
+    margin-bottom: 15px;
+    font-size: 1.1em;
+    font-weight: 600;
+  }
+  .filter-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .filter-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: #667eea;
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .filter-chip span {
+    font-weight: 500;
+  }
+  .chip-remove {
+    background: rgba(255, 255, 255, 0.3);
+    border: none;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    line-height: 1;
+    transition: background 0.2s;
+  }
+  .chip-remove:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  .charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 30px;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .charts-grid-row-2 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .charts-grid-row-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 30px;
+    margin-top: 30px;
+    width: 100%;
+    max-width: 100%;
+  }
+  
+  .chart-container {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+  
+  @media (max-width: 1400px) {
+    .charts-grid-row-2 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .charts-grid-row-2 .chart-container:last-child {
+      grid-column: span 2;
+    }
+    .charts-grid-row-3 {
+      grid-template-columns: repeat(2, 1fr);
+    }
+    .charts-grid-row-3 .chart-container {
+      grid-column: span 2;
+    }
+  }
+  
+  @media (max-width: 1200px) {
+    .charts-grid {
+      grid-template-columns: 1fr;
+    }
+    .charts-grid-row-2 {
+      grid-template-columns: 1fr;
+    }
+    .charts-grid-row-2 .chart-container:last-child {
+      grid-column: span 1;
+    }
+    .charts-grid-row-3 {
+      grid-template-columns: 1fr;
+    }
+    .charts-grid-row-3 .chart-container {
+      grid-column: span 1;
+    }
+    #strategic-recommendations-list {
+      grid-template-columns: repeat(2, 1fr) !important;
+    }
+  }
+  
+  @media (max-width: 768px) {
+    #strategic-recommendations-list {
+      grid-template-columns: 1fr !important;
+    }
+  }
+  
+  .chart-container {
+    background: white;
+    padding: 25px 25px 15px 25px;
+    border-radius: 12px;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+    border: 1px solid #e0e0e0;
+    transition: box-shadow 0.3s;
+    width: 100%;
+    max-width: 100%;
+    box-sizing: border-box;
+  }
+  .chart-container:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+  }
+  .chart-container h3 {
+    margin-bottom: 15px;
+    color: #1e3c72;
+    font-size: 1.2em;
+    font-weight: 600;
+  }
+  .chart-container canvas {
+    max-height: 300px;
+  }
+  #chart-by-month {
+    height: 400px !important;
+    max-height: 400px !important;
+  }
+  #chart-top-models {
+    height: 400px !important;
+    max-height: 400px !important;
+  }
+  #chart-by-fuel-type {
+    height: 400px !important;
+    max-height: 400px !important;
+  }
+  #chart-by-region {
+    min-height: 400px !important;
+    height: 100% !important;
+  }
+  #chart-by-region svg {
+    width: 100%;
+    height: 100%;
+  }
+  #chart-by-body-fuel-type {
+    height: 400px !important;
+    max-height: 400px !important;
+  }
+</style>
+
+<%- include('partials/footer') %>
+

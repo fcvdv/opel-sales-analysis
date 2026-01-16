@@ -1,0 +1,11 @@
+<%- include('partials/header', { title: 'Hata' }) %>
+
+<div class="container">
+<div class="error">
+    <h2 style="color: #d32f2f; margin-bottom: 20px;">Hata</h2>
+    <p style="font-size: 1.2em;"><%= typeof message !== 'undefined' ? message : 'Bir hata oluştu' %></p>
+    <a href="/dashboard" class="btn" style="margin-top: 20px;">Dashboard'a Dön</a>
+</div>
+</div>
+<%- include('partials/footer') %>
+

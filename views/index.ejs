@@ -1,0 +1,78 @@
+<%- include('partials/header', { activePage: 'home', title: 'Ana Sayfa' }) %>
+
+<div class="container">
+<div class="stats-grid">
+    <div class="stat-card">
+        <h3><%= topModels.length %></h3>
+        <p>Analiz Edilen Model</p>
+    </div>
+    <div class="stat-card">
+        <h3><%= byRegion.length %></h3>
+        <p>Bölge</p>
+    </div>
+    <div class="stat-card">
+        <h3><%= byYear.length %></h3>
+        <p>Yıl</p>
+    </div>
+</div>
+
+<h2 style="margin-top: 30px; color: #1e3c72; font-size: 1.4em; font-weight: 600;">En Çok Satan Modeller (Top 5)</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Model</th>
+            <th>Yakıt Tipi</th>
+            <th>Kasa Tipi</th>
+            <th>Toplam Satış</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% topModels.forEach(model => { %>
+        <tr>
+            <td><strong><%= model.model_name %></strong></td>
+            <td><%= model.fuel_type %></td>
+            <td><%= model.body_type %></td>
+            <td><%= model.total_sales %></td>
+        </tr>
+        <% }) %>
+    </tbody>
+</table>
+
+<h2 style="margin-top: 30px; color: #1e3c72; font-size: 1.4em; font-weight: 600;">Bölgelere Göre Satış Dağılımı</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Bölge</th>
+            <th>Toplam Satış</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% byRegion.forEach(region => { %>
+        <tr>
+            <td><strong><%= region.region_name %></strong></td>
+            <td><%= region.total_sales %></td>
+        </tr>
+        <% }) %>
+    </tbody>
+</table>
+
+<h2 style="margin-top: 30px; color: #1e3c72; font-size: 1.4em; font-weight: 600;">Yıllara Göre Satış Dağılımı</h2>
+<table>
+    <thead>
+        <tr>
+            <th>Yıl</th>
+            <th>Toplam Satış</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% byYear.forEach(year => { %>
+        <tr>
+            <td><strong><%= year.year %></strong></td>
+            <td><%= year.total_sales %></td>
+        </tr>
+        <% }) %>
+    </tbody>
+</table>
+</div>
+<%- include('partials/footer') %>
+

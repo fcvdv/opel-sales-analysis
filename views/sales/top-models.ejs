@@ -1,0 +1,34 @@
+<%- include('../partials/header', { activePage: 'top-models', title: 'En Çok Satan Modeller' }) %>
+
+<div class="container">
+<h2 style="color: #1e3c72; margin-bottom: 20px; font-size: 1.5em; font-weight: 600;">En Çok Satan Modeller</h2>
+
+<table>
+    <thead>
+        <tr>
+            <th>Sıra</th>
+            <th>Model</th>
+            <th>Yakıt Tipi</th>
+            <th>Toplam Satış</th>
+        </tr>
+    </thead>
+    <tbody>
+        <% if (topModels.length === 0) { %>
+        <tr>
+            <td colspan="4" style="text-align: center; padding: 40px; color: #999;">Veri bulunamadı.</td>
+        </tr>
+        <% } else { %>
+        <% topModels.forEach((model, index) => { %>
+        <tr>
+            <td><strong><%= index + 1 %></strong></td>
+            <td><strong><%= model.model_name %></strong></td>
+            <td><%= model.fuel_type %></td>
+            <td><%= model.total_sales %></td>
+        </tr>
+        <% }) %>
+        <% } %>
+    </tbody>
+</table>
+</div>
+<%- include('../partials/footer') %>
+
